@@ -1,0 +1,190 @@
+---
+title: "SDS315HW"
+author: "Neil Sebastian"
+date: "2024-01-29"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(kableExtra)
+```
+## **HW2**
+### **UT EID: ns36965**
+## **[GitHub Link](https://github.com/neilsebastian55/SDS315HW2)**
+
+## *Problem One: Beauty, or not, in the classroom*
+
+
+```{r, echo=FALSE, message = FALSE}
+Profs=read_csv("profs.csv")
+```
+
+### *Part A*
+```{r, echo = FALSE, error=FALSE}
+ggplot(Profs) + geom_histogram(aes(x=eval),col = 'black', fill = 'skyblue', binwidth=.1) + labs(title= "Distribution of Course Evals", x = "Eval Score", y = "Count")
+```
+
+On a scale from 1 to 5, the majority of proffesor evaluation scores was a 3, with some outliers. The max count of scores for these professors was 4, and the graph is skewed left.
+
+### *Part B*
+
+```{r, echo=FALSE, error=FALSE}
+ggplot(Profs) + geom_boxplot(aes(x=eval, y=native, fill = native)) + labs(title = "Course Evals for Native/Non-Native English Speaking Professors", x="Evaluation Score", y = "Native English Speakers")
+```
+
+
+Looking at the chart, it seems that professors who speak English as their first language usually get higher evaluation scores compared to those who are Non Native English speakers. However, it's interesting that among professors with the lowest scores, there are still some native English speakers.
+
+### *Part C*
+```{r, echo=FALSE, error=FALSE}
+ggplot(Profs) + geom_histogram(aes(x=eval, fill=gender), col = 'white', binwidth =.1) + labs(title="Distribution of Course Evals", x="Eval Score", y="Count") + facet_wrap(~gender) + scale_fill_manual(values = c('male' = 'blue', 'female' = 'pink'))
+```
+
+Although these graphs express a higher count of better evaluation scores for male professors, the total number of male and female professors differ. The general shapes of the graphs are similar, but should be examined in relation to the number of male/female professors.
+
+### *Part D*
+```{r, echo=FALSE, error=FALSE}
+ggplot(Profs) + geom_point(aes(x=beauty, y=eval), col= 'darkgreen', pch = 25) + labs(title="Distribution of Course Evals by Attractiveness", y = "Eval Score")
+```
+
+The graph above shows a slight correlation between the attractiveness of a professor and their evaluation score. With the 'more' attractive professors typically getting higher evaluation scores than 'less' attractive professors, the highest sample of well-scored professors scored below 0 on the attractiveness scale
+
+## *Problem 2: Bike Sharing*
+
+```{r, echo=FALSE, message=FALSE}
+Bike=read_csv("bikeshare.csv")
+```
+
+### *Part A (Plot A)*
+```{r, echo=FALSE, message=FALSE}
+Bike = Bike %>%
+  group_by(hr) %>%
+  mutate(avghr = mean(total))
+
+ggplot(Bike) + geom_line(aes(x = hr, y = avghr), linewidth = 1.5) + labs(title = "Avg Hourly Bike Rentals", x = "Hour of the Day", y = "Avg Bike Rental Count")
+```
+
+This chart about bike rentals during the day shows that very few bikes are rented in the middle of the night and early morning. The most rentals happen at 8 am and 5-6 pm when people go to and from work. There's also a small increase in rentals around lunchtime (12-1 pm).
+
+### *Part B (Plot B)*
+```{r, echo=FALSE, message=FALSE}
+Bike = Bike %>%
+  group_by(hr, workingday) %>%
+  mutate(avgwd=mean(total))
+
+Bike = Bike %>%
+  mutate(workingday=ifelse(workingday==1, yes = "workingday", no = "nonworkingday"))
+
+ggplot(Bike) + geom_line(aes(x=hr,y=avgwd), linewidth = 1.5) + labs(title = "Avg Hourly Bike Rentals", x = "Hour of the Day", y = "Avg Bike Rental Count") + facet_wrap(~workingday)
+```
+
+The working day graph is fairly similar to the previous graph. However, the nonworking day data follows a more 'smooth' curve increase and decrease in activity rather than sudden jumps. The max for the left graph is around 1pm or 2pm, with much less activity around 8am and 5pm which are considered busier times of the day.
+
+
+### *Part C (Plot C)*
+```{r, echo = FALSE, error = FALSE}
+Bike2 = Bike %>%
+  filter(hr==9)
+
+Bike2=Bike2 %>%
+  group_by(weathersit) %>%
+  mutate(avgws = mean(total))
+
+ggplot(Bike2) + geom_bar(aes(x=weathersit, fill = avgws), fill = "lightpink", size = 1.5) + labs(title = "Avg Bike Rentals by Weather at 9 AM", x = "Weather Condition Code", y = "Avg Bike Rental Count") + facet_wrap(~workingday)
+
+
+```
+
+The above graph supports the idea that people are more likley to rent bikes/ride on workdays with bad weather and that on non working days people tend to ride less overall following the same weather pattern habits but at a lower frequency.
+
+## *Problem 3:Capital Metro UT Ridership*
+### *Part A*
+```{r, echo = FALSE, message = FALSE}
+Cap = read_csv('capmetro_UT.csv')
+```
+
+```{r, echo = FALSE}
+
+averages = Cap %>%
+  group_by(hour_of_day, day_of_week, month) %>%
+  mutate(avgbr = mean(boarding))
+
+DayOrder <- c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+averages$day_of_week <- factor(averages$day_of_week, levels = DayOrder)
+
+MonthOrder <- c("Sep", "Oct", "Nov")
+averages$month <- factor(averages$month, levels = MonthOrder)
+
+ggplot(averages) + geom_line(aes(x = hour_of_day, y = avgbr, color = month)) + facet_wrap(~day_of_week, ncol = 3) + labs(title = "Avg Boardings over Time", x = "Hour of the Day", y = "Average Boardings", color = "month")
+```
+
+These graphs show how many people, on average, board Cap Metro buses in Austin at different times and days of the week. The busiest times are similar on most days, but Saturdays and Sundays have a lower frequencey, this may be because some bus routes are not operating on weekends. On these days, the average number of boardings is barely over 25, while on most days, it's over 100. The lower activity on Mondays in September might be because UT students have fewer classes and early in the semester students may not want to go around Austin. However, in later weekdays in November, there's also lower student activity, possibly because students are less likely to attend classes later in the week and semester.
+
+### *Part B*
+``` {r echo=FALSE}
+Boarding = Cap %>%
+  mutate(day_type = ifelse(day_of_week == "Mon" | day_of_week == "Tue" | day_of_week == "Wed" | day_of_week ==
+  "Thu" | day_of_week == "Fri", "weekday", "weekend"))
+
+# Set up the plot
+ggplot(Boarding, aes(x = temperature, y = boarding, color = day_type)) + geom_point() + facet_wrap(~hour_of_day) + labs(title= 'Boardings by Temperature and Hours in a Day',x = "Temperature", y = "Boardings", color = "Day Type")
+```
+
+The graph above is analyzing the total number of boardings throughout the day over multiple recorded months and how the temperature of that hour of the day affects the number of UT students using the buses. Based on the graphs above, one could make an argument that more extreme temperatures have a lower number of UT students traveling at that time, but there are too many unrecognized variables that could affect this data. There could have been very few/no hours in these months with consistent extreme temperatures, which creates the impression of students avoiding the bus due to weather conditions rather than lack of comparable data. A better measure of the noticeable effects of temperature on bus travelers should be conducted based on averages of boardings over hours and temperatures rather than a comparison of the total number of travelers.
+
+## *Problem 4: Wrangling the Billboard Top 100*
+
+``` {r echo=FALSE, message=FALSE}
+Billboard=read_csv('billboard.csv')
+```
+
+### *Part A*
+``` {r echo=FALSE, message=FALSE}
+TopSongs <- Billboard %>%
+  group_by(performer, song) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  head(10)
+
+TopSongs %>%
+  kable(col.names=c("Performer","Song","Count")) %>%
+  kable_styling(full_width = TRUE, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+The table above shows the top 10 most popular songs all time since 1958, this is shown by the number of times they appeared on the Billboard Top 10 charts. The most popular song on this table using this measurement is "Radioactive" by Imagine Dragons.
+
+### *Part B*
+``` {r echo=FALSE}
+MusicDiv=Billboard %>%
+  filter(year != 1958 & year!=2021) %>%
+  group_by(year) %>%
+  mutate(unique=n_distinct(song))
+
+ggplot(MusicDiv) + geom_line(aes(x=year,y=unique), linewidth=1.5)+labs(title="Num of Unique Songs from 1959-2020", x="Year", y="Count")+theme_bw()
+```
+
+The line graph above shows the trend of unique songs released between 1958 and 2021 (excludsive of 1958 and 2021). The graph ends approaching a new maximum show last in the 60's. The graph reached it lowest number of unique songs around the 2000's. This came after the max in the 60's meaning we could have the same trend in the future.
+
+### *Part C*
+
+``` {r echo=FALSE, message=FALSE, error=FALSE}
+TenWeekHits=Billboard %>%
+  group_by(performer, song) %>%
+  summarise(weeks_on_chart=n()) %>%
+  filter(weeks_on_chart>=10) %>%
+  group_by(performer) %>%
+  summarise(TenWeekHits=n_distinct(song))
+
+Nineteen= TenWeekHits %>%
+  filter(TenWeekHits>=30)
+
+ggplot(Nineteen) + geom_col(aes(x=performer, y=TenWeekHits, fill=performer), stat="identity", fill="darkorange") + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(title="Artists with 30+ Top Week Hits", x="Performer", y="Count")
+```
+
+The plot shows the 19 artists that had over 30 top 100 songs that remained in the Billboard Top 100 for atleast 10 weeks. Some popular artists are Drake, Neil Diamond, Taylor Swift and the leader Elton John.
